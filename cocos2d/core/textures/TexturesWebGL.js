@@ -38,7 +38,6 @@ cc._tmp.WebGLTexture2D = function () {
      * @extends cc.Class
      *
      * @property {WebGLTexture}     name            - <@readonly> WebGLTexture Object
-     * @property {Number}           defaultPixelFormat - The default pixel format
      * @property {Number}           pixelFormat     - <@readonly> Pixel format of the texture
      * @property {Number}           pixelsWidth     - <@readonly> Width in pixels
      * @property {Number}           pixelsHeight    - <@readonly> Height in pixels
@@ -225,7 +224,7 @@ cc._tmp.WebGLTexture2D = function () {
         },
 
         keepData: function (data, length) {
-            //The texture data mustn't be saved becuase it isn't a mutable texture.
+            //The texture data mustn't be saved because it isn't a mutable texture.
             return data;
         },
 
@@ -328,7 +327,8 @@ cc._tmp.WebGLTexture2D = function () {
                 0.0, self.maxT,
                 self.maxS, self.maxT,
                 0.0, 0.0,
-                self.maxS, 0.0 ];
+                self.maxS, 0.0 ],
+                gl = cc._renderContext;
 
             var width = self._pixelsWide * self.maxS,
                 height = self._pixelsHigh * self.maxT;
@@ -339,13 +339,13 @@ cc._tmp.WebGLTexture2D = function () {
                 point.x, height + point.y, 0.0,
                 width + point.x, height + point.y, 0.0 ];
 
-            cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
             self._shaderProgram.use();
             self._shaderProgram.setUniformsForBuiltins();
 
             cc.glBindTexture2D(self);
 
-            var gl = cc._renderContext;
+            gl.enableVertexAttribArray(cc.VERTEX_ATTRIB_POSITION);
+            gl.enableVertexAttribArray(cc.VERTEX_ATTRIB_TEX_COORDS);
             gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, vertices);
             gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, coordinates);
 
@@ -369,13 +369,14 @@ cc._tmp.WebGLTexture2D = function () {
                 rect.x, rect.y + rect.height, /*0.0,*/
                 rect.x + rect.width, rect.y + rect.height        /*0.0*/ ];
 
-            cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POSITION | cc.VERTEX_ATTRIB_FLAG_TEX_COORDS);
             self._shaderProgram.use();
             self._shaderProgram.setUniformsForBuiltins();
 
             cc.glBindTexture2D(self);
 
             var gl = cc._renderContext;
+            gl.enableVertexAttribArray(cc.VERTEX_ATTRIB_POSITION);
+            gl.enableVertexAttribArray(cc.VERTEX_ATTRIB_TEX_COORDS);
             gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 2, gl.FLOAT, false, 0, vertices);
             gl.vertexAttribPointer(cc.VERTEX_ATTRIB_TEX_COORDS, 2, gl.FLOAT, false, 0, coordinates);
 
@@ -454,7 +455,7 @@ cc._tmp.WebGLTexture2D = function () {
                 ? premultiplied
                 : self._hasPremultipliedAlpha;
             // Not sure about this ! Some texture need to be updated even after loaded
-            if (!cc._rendererInitialized)
+            if (!cc.game._rendererInitialized)
                 return;
             if (!self._htmlElementObj) {
                 var img = cc.loader.getRes(self.url);
@@ -824,13 +825,16 @@ cc._tmp.WebGLTextureAtlas = function () {
         //vertices
         //gl.bindBuffer(gl.ARRAY_BUFFER, _t._buffersVBO[0]);
         // XXX: update is done in draw... perhaps it should be done in a timer
-        cc.glEnableVertexAttribs(cc.VERTEX_ATTRIB_FLAG_POS_COLOR_TEX);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, _t._quadsWebBuffer);
         if (_t.dirty){
             gl.bufferData(gl.ARRAY_BUFFER, _t._quadsArrayBuffer, gl.DYNAMIC_DRAW);
             _t.dirty = false;
         }
+
+        gl.enableVertexAttribArray(cc.VERTEX_ATTRIB_POSITION);
+        gl.enableVertexAttribArray(cc.VERTEX_ATTRIB_COLOR);
+        gl.enableVertexAttribArray(cc.VERTEX_ATTRIB_TEX_COORDS);
 
         gl.vertexAttribPointer(cc.VERTEX_ATTRIB_POSITION, 3, gl.FLOAT, false, 24, 0);               // vertices
         gl.vertexAttribPointer(cc.VERTEX_ATTRIB_COLOR, 4, gl.UNSIGNED_BYTE, true, 24, 12);          // colors
@@ -852,17 +856,23 @@ cc._tmp.WebGLTextureCache = function () {
     var _p = cc.textureCache;
 
     _p.handleLoadedTexture = function (url) {
-        var locTexs = this._textures;
+        var locTexs = this._textures, tex, ext;
         //remove judge(webgl)
-        if (!cc._rendererInitialized) {
+        if (!cc.game._rendererInitialized) {
             locTexs = this._loadedTexturesBefore;
         }
-        var tex = locTexs[url];
+        tex = locTexs[url];
         if (!tex) {
             tex = locTexs[url] = new cc.Texture2D();
             tex.url = url;
         }
-        tex.handleLoadedTexture();
+        ext = cc.path.extname(url);
+        if (ext === ".png") {
+            tex.handleLoadedTexture(true);
+        }
+        else {
+            tex.handleLoadedTexture();
+        }
     };
 
     /**
@@ -884,21 +894,33 @@ cc._tmp.WebGLTextureCache = function () {
 
         var locTexs = this._textures;
         //remove judge(webgl)
-        if (!cc._rendererInitialized) {
+        if (!cc.game._rendererInitialized) {
             locTexs = this._loadedTexturesBefore;
         }
-        var tex = locTexs[url] || locTexs[cc.loader._aliases[url]];
+        var tex = locTexs[url] || locTexs[cc.loader._getAliase(url)];
         if (tex) {
-            cb && cb.call(target, tex);
-            return tex;
+            if(tex.isLoaded()) {
+                cb && cb.call(target, tex);
+                return tex;
+            }
+            else
+            {
+                tex.addEventListener("load", function(){
+                   cb && cb.call(target, tex);
+                }, target);
+                return tex;
+            }
         }
 
         tex = locTexs[url] = new cc.Texture2D();
         tex.url = url;
-        var loadFunc = cc.loader._checkIsImageURL(url) ? cc.loader.load : cc.loader.loadImg;
-        loadFunc.call(cc.loader, url, function (err, img) {
+        cc.loader.loadImg(url, function (err, img) {
             if (err)
                 return cb && cb.call(target, err);
+
+            if (!cc.loader.cache[url]) {
+                cc.loader.cache[url] = img;
+            }
             cc.textureCache.handleLoadedTexture(url);
 
             var texResult = locTexs[url];
