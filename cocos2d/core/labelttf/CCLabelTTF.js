@@ -719,18 +719,18 @@ cc.LabelTTF = cc.Sprite.extend(/** @lends cc.LabelTTF# */{
      */
     getContentSize: function () {
         if (this._needUpdateTexture)
-            this._renderCmd._updateTTF();
+            this._renderCmd._updateTexture();
         return cc.Sprite.prototype.getContentSize.call(this);
     },
 
     _getWidth: function () {
         if (this._needUpdateTexture)
-            this._renderCmd._updateTTF();
+            this._renderCmd._updateTexture();
         return cc.Sprite.prototype._getWidth.call(this);
     },
     _getHeight: function () {
         if (this._needUpdateTexture)
-            this._renderCmd._updateTTF();
+            this._renderCmd._updateTexture();
         return cc.Sprite.prototype._getHeight.call(this);
     },
 
