@@ -35,7 +35,9 @@
     cc.inject(cc.LabelTTF.CacheRenderCmd.prototype, proto);
     proto.constructor = cc.LabelTTF.WebGLRenderCmd;
     proto._updateColor = function () {
-        this._updateTexture();
+        // Purpose unclear, but it causes a text render each frame when opacity
+        // is animated (causing very noticeable lag in mobile devices).
+        // this._updateTexture();
         cc.Sprite.WebGLRenderCmd.prototype._updateColor.call(this);
     };
 })();
