@@ -1515,7 +1515,7 @@ cc.MoveTo = cc.MoveBy.extend(/** @lends cc.MoveTo# */{
  * Moving to the specified coordinates.
  * @function
  * @param {Number} duration duration in seconds
- * @param {cc.Point} position
+ * @param {cc.Point|number} position
  * @param {Number} y
  * @return {cc.MoveBy}
  * @example
@@ -1531,7 +1531,7 @@ cc.moveTo = function (duration, position, y) {
  * @static
  * @deprecated since v3.0 <br /> Please use cc.moveTo instead.
  * @param {Number} duration duration in seconds
- * @param {cc.Point} position
+ * @param {cc.Point|number} position
  * @param {Number} y
  * @return {cc.MoveBy}
  */
