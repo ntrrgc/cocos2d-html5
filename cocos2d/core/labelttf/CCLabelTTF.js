@@ -857,6 +857,12 @@ cc.LabelTTF = cc.Sprite.extend(/** @lends cc.LabelTTF# */{
         return this._fontStyle;
     },
 
+    /**
+     * Set font weight, as understood in CSS, e.g. "normal", "bold" or a number
+     * (for instance, the number 300 is used for light variants).
+     *
+     * @param {number|string} fontWeight
+     */
     _setFontWeight: function(fontWeight){
         if (this._fontWeight !== fontWeight) {
             this._fontWeight = fontWeight;
@@ -865,6 +871,10 @@ cc.LabelTTF = cc.Sprite.extend(/** @lends cc.LabelTTF# */{
         }
     },
 
+    /**
+     * Returns the font weight.
+     * @return {number|string}
+     */
     _getFontWeight: function(){
         return this._fontWeight;
     }
