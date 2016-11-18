@@ -1950,7 +1950,7 @@ cc.Node = cc.Class.extend(/** @lends cc.Node# */{
     /**
      * Converts a Point to world space coordinates. The result is in Points.
      * @function
-     * @param {cc.Point} nodePoint
+     * @param {cc.Point} [nodePoint]
      * @return {cc.Point}
      */
     convertToWorldSpace: function (nodePoint) {
