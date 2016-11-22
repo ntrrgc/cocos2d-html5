@@ -92,7 +92,7 @@ cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9ÄÖÜäöüßéèçàùêâîôû]/;
 
     proto._updateTTF = function () {
         var node = this._node;
-        var locDimensionsWidth = node._dimensions.width, i, strLength;
+        var locDimensionsWidth = node._dimensions.width * cc.view.getDevicePixelRatio(), i, strLength;
         var locLineWidth = this._lineWidths;
         locLineWidth.length = 0;
 
@@ -176,7 +176,7 @@ cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9ÄÖÜäöüßéèçàùêâîôû]/;
         var locContentWidth = node._contentSize.width - locStrokeShadowOffsetX;
 
         //lineHeight
-        var lineHeight = node.getLineHeight();
+        var lineHeight = node.getLineHeight() * cc.view.getDevicePixelRatio();
         var transformTop = (lineHeight - this._fontClientHeight) / 2;
 
         if (locHAlignment === cc.TEXT_ALIGNMENT_RIGHT)
