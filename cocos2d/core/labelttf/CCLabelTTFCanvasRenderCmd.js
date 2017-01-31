@@ -245,7 +245,7 @@ cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u03
             var fuzzyLen = text.length * ( maxWidth / allWidth ) | 0;
             var tmpText = text.substr(fuzzyLen);
             var width = allWidth - this._measure(tmpText);
-            var sLine;
+            var sLine = tmpText;
             var pushNum = 0;
 
             // Increased while looping, up to 100 times
@@ -284,15 +284,13 @@ cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u03
             }
 
             // sText is the text that will make it into the first line.
-            // sLine is the remaining text, that will go into the next lines...
-            // unless we got width == maxWidth on the first try, in that case
-            // sLine is undefined and the tmpText is the remaining text.
+            // sLine is the remaining text, that will go into the next lines.
             // result is just a temporary variable for regexp matching results.
             var sText = text.substr(0, fuzzyLen), result;
 
             if (cc.LabelTTF.wrapInspection) {
                 // If the remaining text starts with symbol
-                if (cc.LabelTTF._symbolRex.test(sLine || tmpText)) {
+                if (cc.LabelTTF._symbolRex.test(sLine)) {
                     // Remove the last word so it is placed in the next line instead
                     result = cc.LabelTTF._lastWordRex.exec(sText);
                     fuzzyLen -= result ? result[0].length : 0;
@@ -320,7 +318,7 @@ cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u03
                 }
             }
 
-            strArr[i] = sLine || tmpText;
+            strArr[i] = sLine;
             strArr.splice(i, 0, sText);
         }
     };
