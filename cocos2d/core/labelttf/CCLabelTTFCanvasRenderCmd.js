@@ -21,7 +21,7 @@
 cc.LabelTTF._textAlign = ["left", "center", "right"];
 cc.LabelTTF._textBaseline = ["top", "middle", "bottom"];
 
-//check the first character
+// Ensures punctuation marks after word are not wrapped.
 cc.LabelTTF.wrapInspection = true;
 
 // These regular expressions consider a word any sequence of characters
@@ -241,17 +241,18 @@ cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u03
         var text = strArr[i];
         var allWidth = this._measure(text);
         if (allWidth > maxWidth && text.length > 1) {
-
+            // Attempt to guess how many characters fit in the first line
             var fuzzyLen = text.length * ( maxWidth / allWidth ) | 0;
             var tmpText = text.substr(fuzzyLen);
             var width = allWidth - this._measure(tmpText);
             var sLine;
             var pushNum = 0;
 
-            //Increased while cycle maximum ceiling. default 100 time
+            // Increased while looping, up to 100 times
             var checkWhile = 0;
 
-            //Exceeded the size
+            // Contraction phase:
+            // If we guessed too bing, try with less characters
             while (width > maxWidth && checkWhile++ < 100) {
                 fuzzyLen *= maxWidth / width;
                 fuzzyLen = fuzzyLen | 0;
@@ -261,7 +262,8 @@ cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u03
 
             checkWhile = 0;
 
-            //Find the truncation point
+            // Expansion phase:
+            // Keep adding words until no more fit in the line
             while (width < maxWidth && checkWhile++ < 100) {
                 if (tmpText) {
                     var exec = cc.LabelTTF._wordRex.exec(tmpText);
@@ -274,17 +276,24 @@ cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u03
                 width = allWidth - this._measure(tmpText);
             }
 
+            // Remove the last word in the previous loop, as it overflew
             fuzzyLen -= pushNum;
             if (fuzzyLen === 0) {
                 fuzzyLen = 1;
                 sLine = sLine.substr(1);
             }
 
+            // sText is the text that will make it into the first line.
+            // sLine is the remaining text, that will go into the next lines...
+            // unless we got width == maxWidth on the first try, in that case
+            // sLine is undefined and the tmpText is the remaining text.
+            // result is just a temporary variable for regexp matching results.
             var sText = text.substr(0, fuzzyLen), result;
 
-            //symbol in the first
             if (cc.LabelTTF.wrapInspection) {
+                // If the remaining text starts with symbol
                 if (cc.LabelTTF._symbolRex.test(sLine || tmpText)) {
+                    // Remove the last word so it is placed in the next line instead
                     result = cc.LabelTTF._lastWordRex.exec(sText);
                     fuzzyLen -= result ? result[0].length : 0;
                     if (fuzzyLen === 0) fuzzyLen = 1;
@@ -294,9 +303,16 @@ cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u03
                 }
             }
 
-            //To judge whether a English words are truncated
+            // To judge whether words are truncated:
+            // fuzzyLen may have got a value such that we're truncating a word
+            // (examine the case where it falls at the middle of a word and no
+            // more words are added).
             if (cc.LabelTTF._firsrEnglish.test(sLine)) {
                 result = cc.LabelTTF._lastEnglish.exec(sText);
+                // If sText ends in letter and sLine starts in letter, we've
+                // truncated a word. The right part does not fit (otherwise
+                // it would have been added in the expansion phase), so we
+                // remove also the left part so both are printed in the next line.
                 if (result && sText !== result[0]) {
                     fuzzyLen -= result[0].length;
                     sLine = text.substr(fuzzyLen);
