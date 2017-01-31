@@ -43,6 +43,7 @@ cc.LabelTTF._symbolRex = /^[!,.:;}\]%\?>、‘“》»？。，！\u2010′-‴�
 cc.LabelTTF._lastWordRex = /([a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u0350-\u036FͰ-ԯ\u2011‵-‷‹⁅]+|\S)$/;
 cc.LabelTTF._lastEnglish = /[a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u0350-\u036FͰ-ԯ\u2011‵-‷‹⁅]+$/;
 cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u0350-\u036FͰ-ԯ\u2011‵-‷‹⁅]/;
+cc.LabelTTF._whitespace = /^[\s　]*/; // includes Ideographic Space
 
 (function() {
     cc.LabelTTF.RenderCmd = function () {
@@ -317,6 +318,11 @@ cc.LabelTTF._firsrEnglish = /^[a-zA-Z0-9\-¿¡«À-ÖØ-öø-ʯ\u0300-\u034e\u03
                     sText = text.substr(0, fuzzyLen);
                 }
             }
+
+            // Eat as much whitespace as possible from the beginning of the next
+            // line.
+            result = cc.LabelTTF._whitespace.exec(sLine);
+            sLine = sLine.substr(result[0].length);
 
             strArr[i] = sLine;
             strArr.splice(i, 0, sText);
