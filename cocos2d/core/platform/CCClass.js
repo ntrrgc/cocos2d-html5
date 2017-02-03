@@ -191,7 +191,12 @@ var ClassManager = {
         // The dummy Class constructor
         var Class;
         if (cc.game.config && cc.game.config[cc.game.CONFIG_KEY.exposeClassName]) {
-            var constructor = "(function " + (props._className || "Class") + " (arg0, arg1, arg2, arg3, arg4, arg5) {\n";
+            var createdClassName = (props._className ||
+                "Unnamed" + (_super._className != null
+                    ? _super._className + "Child"
+                    : "Class"))
+                .replace(".", "_");
+            var constructor = "(function " + createdClassName + " (arg0, arg1, arg2, arg3, arg4, arg5) {\n";
             constructor += "    this.__instanceId = ClassManager.getNewInstanceId();\n";
             constructor += "    if (this.ctor) {\n";
             constructor += "        switch (arguments.length) {\n";
