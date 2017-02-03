@@ -190,7 +190,7 @@ var ClassManager = {
 
         // The dummy Class constructor
         var Class;
-        if (cc.game.config && cc.game.config[cc.game.CONFIG_KEY.exposeClassName]) {
+        if (true) {
             var createdClassName = (props._className ||
                 "Unnamed" + (_super._className != null
                     ? _super._className + "Child"
